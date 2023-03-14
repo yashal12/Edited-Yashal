@@ -12,6 +12,7 @@ class Calculator:
         print("Result of Addition: ", sum1)
 
 
+
     def subtract(self):
         print("\n Subtraction")
         num1 = int(input("enter number1: "))
