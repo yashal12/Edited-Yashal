@@ -1,5 +1,10 @@
 import math
-import numpy as np
+import re
+from pythonds.basic import Stack
+
+output = []
+ch = Stack()
+precedence = {'(': 0, '+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
 
 
 class Calculator:
@@ -8,105 +13,106 @@ class Calculator:
         self.b = b
 
     def add(self):
-        n = int(input("enter total numbers to add: "))
-        sum1 = 0
-        for i in range(1, n + 1):
-            num = input(f'enter number {i}: ')
-            sum1 = sum1 + i
-        print("Result of Addition: ", sum1)
+        return self.a + self.b
 
     def subtract(self):
-        print("\n Subtraction")
         return self.b - self.a
 
     def multiply(self):
-        print("\n Multiply")
         return self.a * self.b
 
     def divide(self):
-        print("\n Division")
         return self.a / self.b
 
     def power(self):
-        print("\n Exponent")
         return pow(self.a, self.b)
 
     def sin(self):
-        print("\n Sin")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.sin(res)
-        print(f"Sin({n})={result}")
+        return math.sin(math.radians(self.a))
 
     def cosine(self):
-        print("\n Cosine")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.cos(res)
-        print(f"Cos({n})={result}")
+        return math.cos(math.radians(self.a))
 
     def tan(self):
-        print("\n Tangent")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.tan(res)
-        print(f"Tan({n})={result}")
+        return math.tan(math.radians(self.a))
 
     def secant(self):
-        print("\n Secant")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.acos(res)
-        print(f"Sec({n})={result}")
+        return math.acos(math.radians(self.a))
 
     def cosecant(self):
-        print("\n Cosecant")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.asin(res)
-        print(f"Cosc({n})={result}")
+        return math.asin(math.radians(self.a))
 
     def cotangent(self):
-        print("\n Cotangent")
-        n = int(input("enter number: "))
-        res = math.radians(n)
-        result = math.atan(res)
-        print(f"Tan({n})={result}")
+        return math.atan(math.radians(self.a))
 
 
-class Evalpostfix:
-    def __init__(self):
-        self.stack = []
-        self.top = -1
-
-    def pop(self):
-        if self.top == -1:
-            return
+def postfix(exp):  # Postfix function
+    for i in exp:
+        if i == '(':
+            ch.push(i)
+        elif i == ')':
+            while ch.peek() != '(':
+                x = ch.pop()
+                output.append(x)
+            ch.pop()
+        elif i == '*' or i == '/' or i == '+' or i == '-' or i == '^':
+            if not ch.isEmpty():
+                while precedence[ch.peek()] >= precedence[i]:
+                    ele = ch.pop()
+                    output.append(ele)
+                    if ch.isEmpty:
+                        break
+                ch.push(i)
+            if ch.isEmpty() or ch.peek() == '(':
+                ch.push(i)
         else:
-            self.top = self.top - 1
-            return self.stack.pop()
+            output.append(i)
+    while not ch.isEmpty():
+        a = ch.pop()
+        output.append(a)
+    for j in output:
+        print(j, end='')
+    q = ' '.join(output)
+    evaluation(q)
 
-    def push(self, i):
-        self.top = self.top + 1
-        self.stack.append(i)
-
-    def centralfunc(self, ab):
-        for i in ab:
-            try:
-                self.push(int(i))
-            except ValueError:
-                val1 = self.pop()
-                val2 = self.pop()
-
-                if i == '/':
-                    self.push(val2 / val1)
-                else:
-                    switcher = {'+': val2 + val1, '-': val2 - val1, '*': val2 * val1, '^': val2 ** val1}
-                    self.push(switcher.get(i))
-        return int(self.pop())
+    return q
 
 
-a = int(input("enter number1: "))
+def evaluation(q):  # evaluation
+    output2 = []
+    d = q.split(' ')
+    chh = Stack()
+    chh.isEmpty()
+    for ev in d:
+        if ev == '*' or ev == '/' or ev == '+' or ev == '-' or ev == '^':
+            a1 = chh.pop()
+            a = float(a1)
+            b1 = chh.pop()
+            b = float(b1)
+            if ev == '*':
+                result = b * a
+                chh.push(result)
+                chh.pop()
+            if ev == '+':
+                result = b + a
+                chh.push(result)
+                chh.pop()
+            if ev == '/':
+                result = b / a
+                chh.push(result)
+                chh.pop()
+            if ev == '-':
+                result = b - a
+                chh.push(result)
+                chh.pop()
+            chh.push(result)
+        else:
+            chh.push(ev)
+            output2.append(ev)
+
+    print("\nThe Answer is:", chh.pop())
+
+a = int(input("enter number1: "))  # Calculator class
 b = int(input("enter number2: "))
 obj = Calculator(a, b)
 
@@ -116,35 +122,33 @@ while True:
     print(x)
     choice = int(input('Please select from 0 to 10 : '))
     if choice == 1:
-        obj.add()
+        print("\nResult of Addition = ", obj.add())
     elif choice == 2:
-        print("Result = ", obj.subtract())
+        print("\nResult of Subtraction = ", obj.subtract())
     elif choice == 3:
-        print("Result = ", obj.multiply())
+        print("\nResult of multiplication = ", obj.multiply())
     elif choice == 4:
-        print("Result = ", obj.divide())
+        print("\nResult of division = ", obj.divide())
     elif choice == 5:
-        print("Result = ", obj.power())
+        print("\nResult = ", obj.power())
     elif choice == 6:
-        obj.sin()
+        print(f"\nSin({a})={obj.sin()}")
     elif choice == 7:
-        obj.cosine()
+        print(f"\nCos({a})={obj.cosine()}")
     elif choice == 8:
-        obj.tan()
+        print(f"\nTan({a})={obj.tan()}")
     elif choice == 9:
-        obj.secant()
+        print(f"\nSec({a})={obj.secant()}")
     elif choice == 10:
-        obj.cosecant()
+        print(f"\nCosec({a})={obj.cosecant()}")
     elif choice == 11:
-        obj.cotangent()
+        print(f"\nCot({a})={obj.cotangent()}")
     elif choice == 0:
         break
     else:
         print('Invalid option')
         break
 
-string = '200 100 - 12 / 35 - 97 +'
-strconv = string.split(' ')
-obj1 = Evalpostfix()
-print("\nResult of given infix expression to postfix:")
-print(obj1.centralfunc(strconv))
+exp = input('Enter expression: ')
+values = re.findall(r"(\d+|[-+()/*])", exp)
+w = postfix(values)
