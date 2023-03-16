@@ -1,10 +1,14 @@
 import math
 import re
-from pythonds.basic import Stack
+
+# from pythonds.basic import Stack
 
 output = []
-ch = Stack()
+operator = []
 precedence = {'(': 0, '+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+operators = ['+', '-', '*', '/', '^']
+output2 = []
+operator1 = []
 
 
 class Calculator:
@@ -46,31 +50,43 @@ class Calculator:
         return math.atan(math.radians(self.a))
 
 
-def postfix(exp):  # Postfix function
+def postfix(exp):
+
     for i in exp:
+
         if i == '(':
-            ch.push(i)
+            operator.append(i)
         elif i == ')':
-            while ch.peek() != '(':
-                x = ch.pop()
+
+            while operator[-1] != '(':
+
+                x = operator.pop()
                 output.append(x)
-            ch.pop()
-        elif i == '*' or i == '/' or i == '+' or i == '-' or i == '^':
-            if not ch.isEmpty():
-                while precedence[ch.peek()] >= precedence[i]:
-                    ele = ch.pop()
+            operator.pop()
+        elif i in operators:
+            if len(operator) != 0:
+
+                while precedence[operator[-1]] >= precedence[i]:
+
+                    ele = operator.pop()
                     output.append(ele)
-                    if ch.isEmpty:
+                    if len(operator) == 0:
                         break
-                ch.push(i)
-            if ch.isEmpty() or ch.peek() == '(':
-                ch.push(i)
+
+                operator.append(i)
+
+            if len(operator) == 0 or operator[-1] == '(':
+                operator.append(i)
         else:
             output.append(i)
-    while not ch.isEmpty():
-        a = ch.pop()
+
+    while len(operator) != 0:
+
+        a = operator.pop()
         output.append(a)
+
     for j in output:
+
         print(j, end='')
     q = ' '.join(output)
     evaluation(q)
@@ -78,45 +94,49 @@ def postfix(exp):  # Postfix function
     return q
 
 
-def evaluation(q):  # evaluation
+# evaluation
+
+def evaluation(q):
     output2 = []
     d = q.split(' ')
-    chh = Stack()
-    chh.isEmpty()
+
     for ev in d:
-        if ev == '*' or ev == '/' or ev == '+' or ev == '-' or ev == '^':
-            a1 = chh.pop()
+
+        if ev in operators:
+            a1 = operator1.pop()
             a = float(a1)
-            b1 = chh.pop()
+            b1 = operator1.pop()
             b = float(b1)
-            if ev == '*':
-                result = b * a
-                chh.push(result)
-                chh.pop()
-            if ev == '+':
-                result = b + a
-                chh.push(result)
-                chh.pop()
-            if ev == '/':
-                result = b / a
-                chh.push(result)
-                chh.pop()
-            if ev == '-':
-                result = b - a
-                chh.push(result)
-                chh.pop()
-            chh.push(result)
+            if ev in operators[2]:
+                result = a.__mul__(b)
+                operator1.append(result)
+                operator1.pop()
+            if ev in operators[0]:
+                result = a.__add__(b)
+                operator1.append(result)
+                operator1.pop()
+            if ev in operators[-2]:
+                result = a.__divmod__(b)
+                operator1.append(result)
+                operator1.pop()
+            if ev in operators[1]:
+                result = a.__sub__(b)
+                operator1.append(result)
+                operator1.pop()
+            operator1.append(result)
         else:
-            chh.push(ev)
+            operator1.append(ev)
             output2.append(ev)
 
-    print("\nThe Answer is:", chh.pop())
+    print("\nThe Answer is:", operator1.pop())
+
 
 a = int(input("enter number1: "))  # Calculator class
 b = int(input("enter number2: "))
 obj = Calculator(a, b)
 
 while True:
+
     x = '1. Add \n2. Subtract  \n3. Multiply  \n4. Divide  \n5. Exponent  \n6. Sin  \n7. Cos  \n8. Tan \n9. Sec ' \
         '\n10. Cosec  \n11. Cot  \n0. Quit'
     print(x)
