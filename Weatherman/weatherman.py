@@ -1,198 +1,197 @@
 import argparse
+import calendar
 import csv
 import glob
 import os
 
 
-class Weatherman:
+class Parser:
 
+    def __init__(self, file):
+        self.file = file
 
-    def parser(self, file):
-
+    def parser(self):
         list_of_data = []
-        with open(file, 'r') as file:
-            reader = csv.DictReader(file)
+        with open(self.file, 'r') as file_name:
+            reader = csv.DictReader(file_name)
+
             for rows in reader:
                 list_of_data.append(rows)
 
         return list_of_data
 
-    def search_files(self, year):
 
-        folder_path = '/Users/yashal.imran/Downloads/weatherfiles/'
-        path = '*' + str(year) + '_*txt'  # search for files in directory
-        files = glob.glob(folder_path + path)
+class Month:
 
-        return files
+    def __init__(self, list_of_file):
 
-    def read_temperature(self, read):
+        self.list_of_file = list_of_file
 
-        self.max_column = read['Max TemperatureC']
-        self.min_column = read['Min TemperatureC']
-        self.humidity_column = read['Max Humidity']
+    def compute_sum(self):
 
-    def constants(self):
+        max_temp = min_temp = max_humidity = 0
+        length = len(self.list_of_file)
 
-        max_temp = 0
-        min_temp = 0
-        humidity = 0
-        date_max_temp = 0
-        date_min_temp = 0
-        date_humidity = 0
+        for row in self.list_of_file:
+            if row['Max TemperatureC']:
+                max_temp += float(row['Max TemperatureC'])
 
-        return max_temp
-        return min_temp
-        return humidity
+            if row['Min TemperatureC']:
+                min_temp += float(row['Min TemperatureC'])
 
-    def isEmpty_max(self):
+            if row['Max Humidity']:
+                max_humidity += float(row['Max Humidity'])
 
-        if self.max_column == '':
-            max_column = 0
+        return max_temp, min_temp, max_humidity, length
 
-    def isEmpty_min(self):
+    def compute_average(self, max_temp, min_temp, max_humidity, length):
 
-        if self.min_column == '':
-            min_column = 0
+        average_max = max_temp / length
+        average_min = min_temp / length
+        average_humidity = max_humidity / length
 
-    def isEmpty_humidity(self):
+        print("\nHighest Average: ", average_max)
+        print("\nLowest Average:", average_min)
+        print("\nAverage mean humidity: ", average_humidity)
 
-        if self.humidity_column == '':
-            humidity_column = 0
+        self.report(average_max, average_min, average_humidity)
 
-    def annual_temperature(self, year):
+    def report(self, average_max, average_min, average_humidity):
 
-        files = self.search_files(year)
-        length = len(files)
-        # max_temp = self.constants()
-        # min_temp = self.constants()
-        # humidity = self.constants()
-        # date_max_temp = self.constants()
-        # date_min_temp = self.constants()
-        # date_humidity = self.constants()
+        result = []
+        result.append(average_max)
+        result.append(average_min)
+        result.append(average_humidity)
 
-        for traverse in range(length):
+
+class Annual:
+
+    def __init__(self, year):
+
+        self.year = year
+
+    def annual_temperature(self):
+
+        max_temp = max_humidity = 0
+        min_temp = 500
+        path = '/Users/yashal.imran/Downloads/weatherfiles'
+        format_file = "*" + str(self.year) + '_*txt'  # search for files in directory
+        files = glob.glob(f"{path}/{format_file}")
+
+        for traverse in range(len(files)):
             traverse_files = files[traverse]
 
-            read_files = self.parser(traverse_files)
+            read = Parser(traverse_files).parser()
 
-            for read in read_files:
-                max_column = self.read_temperature(read)
+            for x in read:
+                if float(x['Max TemperatureC']) > max_temp:
+                    max_temp = float(x['Max TemperatureC'])
+                    date_max_temp = x['PKT']
 
-                max_temp = self.constants()
-                self.isEmpty_max()
+                if float(x['Min TemperatureC']) < min_temp:
+                    min_temp = float(x['Min TemperatureC'])
+                    date_min_temp = x['PKT']
 
-                if float(self.max_column) > max_temp:
-                    max_temp = float(self.max_column)
-                    date_max_temp = read['PKT']
+                if float(x['Max Humidity']) > max_humidity:
+                    max_humidity = float(x['Max Humidity'])
+                    date_humidity = x['PKT']
 
-            for read in read_files:
-                min_column = self.read_temperature(read)
+        print(f"\nHighest: {max_temp} on {date_max_temp}")
+        print(f"\nLowest: {min_temp} on {date_min_temp}")
+        print(f"\nHumidity: {max_humidity} on {date_humidity}")
 
-                min_temp = self.constants()
-                self.isEmpty_min()
+        self.report(max_temp, min_temp, max_humidity)
 
-                if float(self.min_column) > min_temp:
-                    min_temp = float(self.min_column)
-                    date_min_temp = read['PKT']
-
-            for read in read_files:
-                humidity_column = self.read_temperature(read)
-
-                humidity = self.constants()
-                self.isEmpty_humidity()
-
-                if float(self.humidity_column) > humidity:
-                    humidity = float(self.humidity_column)
-                    date_humidity = read['PKT']
-
-        print(f"\n{max_temp} on {date_max_temp}")
-        print(f"\n{min_temp} on {date_min_temp}")
-        print(f"\n{humidity} on {date_humidity}")
-
-        self.report(max_temp, min_temp, humidity)
-
-    def report(self, max_temp, min_temp, humidity):
+    def report(self, max_temp, min_temp, max_humidity):
 
         result = []
         result.append(max_temp)
         result.append(min_temp)
-        result.append(humidity)
+        result.append(max_humidity)
 
-        # print(result)
 
-    def monthly_temperature(self, file):
+class Charts:
 
-        self.constants()
-        read_files = self.parser(file)
-        length = len(read_files)
+    def __init__(self, list_of_file):
+        self.list_of_file = list_of_file
 
-        for read in read_files:
-            self.read_temperature(read)
+    def finding_max_min_temperature(self):
 
-            self.isEmpty_max()
-            self.isEmpty_min()
-            self.isEmpty_humidity()
-            add_max_temp = self.constants()
-            add_min_temp = self.constants()
-            add_humidity = self.constants()
+        max_column = min_column = 0
 
-            add_max_temp += float(self.max_column)
-            add_min_temp += float(self.min_column)
-            add_humidity += float(self.humidity_column)
+        for read in self.list_of_file:
+            if float(read['Max TemperatureC']) > max_column:
+                max_column = float(read['Max TemperatureC'])
+                date_max_temp = read['PKT']
 
-        average_max = add_max_temp / length
-        average_min = add_min_temp / length
-        average_humidity = add_humidity / length
+            if float(read['Min TemperatureC']) > min_column:
+                min_column = float(read['Min TemperatureC'])
+                date_min_temp = read['PKT']
 
-        print("\nAverage max temperature", average_max)
-        print("\nAverage min temperature", average_min)
-        print("\nAverage humidity", average_humidity)
+        return max_column, min_column, date_max_temp, date_min_temp
 
-        self.report(average_max, average_min, average_humidity)
+    def charts(self):
 
-    def barchart(self, file):
-
-        read_files = self.parser(file)
         row = '+ '
-        length = len(read_files)
 
-        for read_length in range(length):
-            for read in read_files:
-                date = read['PKT']
+        max_column, min_column, date_max_temp, date_min_temp = self.finding_max_min_temperature()
+        string = '\033[31m' + int(max_column) * row + '\033[0m'  # Use red color for string
+        print(f"\n{date_max_temp} {string} {max_column}")
 
-                max_column = self.read_temperature(read)
-                min_column = self.read_temperature(read)
-                self.isEmpty_max
-                self.isEmpty_min()
-
-                string = int(self.max_column) * row
-                string2 = int(self.min_column) * row
-
-        print(f"\n{date} {string} {self.max_column}")
-        print(f"\n{date} {string2} {self.min_column}")
+        string2 = '\033[34m' + int(min_column) * row + '\033[0m'  # Use blue color for string2
+        print(f"\n{date_min_temp} {string2} {min_column}")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--file')
-    parser.add_argument('--year')
-    parser.add_argument('--month')
-    parser.add_argument('--barchart')
-    args = parser.parse_args()
+def extract_filenames(j):
+    month_abbreviations = calendar.month_abbr
+    for i, month_ in enumerate(month_abbreviations):
+        if i == j:
+            return month_
 
-    if args.year:
-        year = args.year
-        year_call = Weatherman()
-        year_call.annual_temperature(year)
-    # print(args.year)
-    if args.month:
-        file = args.month
-        # file = '/Users/yashal.imran/Downloads/weatherfiles/Murree_weather_2011_Apr.txt'
-        month_call = Weatherman()
-        month_call.monthly_temperature(file)
-    # print(args.month)
-    if args.barchart:
-        file = args.barchart
-        chart_call = Weatherman()
-        chart_call.barchart(file)
-    # print(args.barchart)
+
+def main():
+    if __name__ == '__main__':
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('file')
+        parser.add_argument('-a')
+        parser.add_argument('-e')
+        parser.add_argument('-c')
+        args = parser.parse_args()
+
+        if args.a:
+            year, month = args.a.split('/')
+            month = extract_filenames(int(month))
+            folder = args.file
+            path = 'Murree_weather_' + str(year) + '_' + str(month) + '.txt'
+            file_list = glob.glob(f"{folder}/{path}")
+
+            for file in file_list:
+                parse = Parser(file)
+
+                parsed_file = parse.parser()
+                monthly_temp = Month(parsed_file)
+                max_temp, min_temp, max_humidity, length = monthly_temp.compute_sum()
+                monthly_temp.compute_average(max_temp, min_temp, max_humidity, length)
+
+        if args.e:
+            year = args.e
+            year_obj = Annual(year)
+            year_obj.annual_temperature()
+
+        if args.c:
+            year, month = args.c.split('/')
+            month = extract_filenames(int(month))
+            folder = args.file
+            path = 'Murree_weather_' + str(year) + '_' + str(month) + '.txt'
+            file_list = glob.glob(f"{folder}/{path}")
+
+            for file in file_list:
+                parse = Parser(file)
+
+                parsed_file = parse.parser()
+                chart = Charts(parsed_file)
+                chart.charts()
+
+
+main()
