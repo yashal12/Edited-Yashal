@@ -1,12 +1,10 @@
 class Charts:
 
     def __init__(self, list_of_file):
-
         self.list_of_file = list_of_file
 
     def max_temperature_chart(self):
-
-        for date_count, read_row in enumerate(self.list_of_file, 1):
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
             print(f"\n{date_of_temperature}", end=' ')
@@ -14,8 +12,7 @@ class Charts:
             print(f"{read_row['Max TemperatureC']}")
 
     def min_temperature_chart(self):
-
-        for date_count, read_row in enumerate(self.list_of_file, 1):
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
             print(f"\n{date_of_temperature}", end=' ')
@@ -23,8 +20,7 @@ class Charts:
             print(f"{read_row['Min TemperatureC']}")
 
     def combine_chart(self):
-
-        for date_count, read_row in enumerate(self.list_of_file, 1):
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
             print(f"\n{date_of_temperature}", end=' ')

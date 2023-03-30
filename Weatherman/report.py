@@ -1,4 +1,3 @@
 class Report:
-    def report(self, highest_temperature, lowest_temperature, humidity):
-        result = [highest_temperature, lowest_temperature, humidity]
-        print(result)
+    def report(self, max_temperature, min_temperature, humidity):
+        result = [max_temperature, min_temperature, humidity]

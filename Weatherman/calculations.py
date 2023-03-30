@@ -3,103 +3,72 @@ import glob
 from parser import Parser
 
 
-class AnnualStatistics:
-
-    def __init__(self, year):
-        self.year = year
-
-    def search_files(self):
-        folder_path = '/Users/yashal.imran/Downloads/weatherfiles'
-        file_path = "*" + str(self.year) + '_*txt'  # search for files in directory
-        files = glob.glob(f"{folder_path}/{file_path}")
-
-        return files
-
-    def annual_operations(self):
-
-        store_highest_temperature = store_humidity = 0
-        store_lowest_temperature = 500
-        files = self.search_files()
-
-        for traverse in range(len(files)):
-            traverse_files = files[traverse]
-
-            file_read = Parser(traverse_files).parser()
-
-            for read_data in file_read:
-                if float(read_data['Max TemperatureC']) > store_highest_temperature:
-                    store_highest_temperature = float(read_data['Max TemperatureC'])
-                    date_highest_temperature = read_data['PKT']
-
-                if float(read_data['Min TemperatureC']) < store_lowest_temperature:
-                    store_lowest_temperature = float(read_data['Min TemperatureC'])
-                    date_lowest_temperature = read_data['PKT']
-
-                if float(read_data['Max Humidity']) > store_humidity:
-                    store_humidity = float(read_data['Max Humidity'])
-                    date_humidity = read_data['PKT']
-
-        return store_highest_temperature, store_lowest_temperature, store_humidity, date_highest_temperature, date_lowest_temperature, date_humidity
-
-    def print(self, store_highest_temperature, store_lowest_temperature, store_humidity, date_highest_temperature, date_lowest_temperature, date_humidity):
-        print(f"\nHighest: {store_highest_temperature} on {date_highest_temperature} \nLowest: {store_lowest_temperature} on {date_lowest_temperature}"
-              f"\nHumidity: {store_humidity} on {date_humidity}")
-
-
-class Month:
+class Statistics:
 
     def __init__(self, list_of_file):
-
         self.list_of_file = list_of_file
 
-    def add_highest_temperature(self):
+    def annual_operations(self):
+        max_temperature = humidity = 0
+        min_temperature = 500
+        file_read = self.list_of_file
+        length = len(file_read)
 
-        store_highest_temperature = 0
+        for traverse in range(length):
+            traverse_files = file_read[traverse]
+            read_files = Parser(traverse_files).parser()
+
+            for read_data in read_files:
+                if float(read_data['Max TemperatureC']) > max_temperature:
+                    max_temperature = float(read_data['Max TemperatureC'])
+                    date_max_temperature = read_data['PKT']
+
+                if float(read_data['Min TemperatureC']) < min_temperature:
+                    min_temperature = float(read_data['Min TemperatureC'])
+                    date_min_temperature = read_data['PKT']
+
+                if float(read_data['Max Humidity']) > humidity:
+                    humidity = float(read_data['Max Humidity'])
+                    date_humidity = read_data['PKT']
+
+        return max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature, date_humidity
+
+    def print_annual(self, max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature, date_humidity):
+        print(f"\nHighest: {max_temperature} on {date_max_temperature} \nLowest: {min_temperature} on {date_min_temperature}"
+              f"\nHumidity: {humidity} on {date_humidity}")
+
+    # Monthly Statistics
+
+    def return_sum(self, col):
+        temperature = sum(float(read_data[col]) for read_data in self.list_of_file)
+
+        return temperature
+
+    def sum_call(self):
         length_of_file = len(self.list_of_file)
+        max_temperature = self.return_sum('Max TemperatureC')
+        min_temperature = self.return_sum('Min TemperatureC')
+        humidity = self.return_sum('Max Humidity')
 
-        for read_data in self.list_of_file:
-            if read_data['Max TemperatureC']:
-                store_highest_temperature += float(read_data['Max TemperatureC'])
+        return max_temperature, min_temperature, humidity, length_of_file
 
-        return store_highest_temperature, length_of_file
+    def highest_average(self, max_temperature, length_of_file):
+        average_highest = max_temperature / length_of_file
 
-    def highest_average(self, store_highest_temperature, length_of_file):
-
-        average_highest = store_highest_temperature / length_of_file
-        print("\nHighest Average: ", average_highest)
 
         return average_highest
 
-    def add_lowest_temperature(self, length_of_file):
-
-        store_lowest_temperature = 0
-
-        for read_data in self.list_of_file:
-            if read_data['Min TemperatureC']:
-                store_lowest_temperature += float(read_data['Min TemperatureC'])
-
-        return store_lowest_temperature
-
-    def lowest_average(self, store_lowest_temperature, length_of_file):
-
-        average_lowest = store_lowest_temperature / length_of_file
-        print("\nLowest Average:", average_lowest)
+    def lowest_average(self, min_temperature, length_of_file):
+        average_lowest = min_temperature / length_of_file
 
         return average_lowest
 
-    def add_humidity(self, length_of_file):
-
-        store_humidity = 0
-
-        for read_data in self.list_of_file:
-            if read_data['Max Humidity']:
-                store_humidity += float(read_data['Max Humidity'])
-
-        return store_humidity
-
-    def average_humidity(self, store_humidity, length_of_file):
-
-        average_humidity = store_humidity / length_of_file
-        print("\nLowest Average:", average_humidity)
+    def average_humidity(self, humidity, length_of_file):
+        average_humidity = humidity / length_of_file
 
         return average_humidity
+
+    def print(self, average_highest, average_lowest, average_humidity):
+        print("\nHighest Average: ", average_highest)
+        print("\nLowest Average:", average_lowest)
+        print("\nLowest Average:", average_humidity)
