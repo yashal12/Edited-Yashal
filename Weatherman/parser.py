@@ -1,12 +1,12 @@
 import csv
 
 
-class Parser:
+class WeatherDataParser:
 
     def __init__(self, file_to_read):
         self.file_to_read = file_to_read
 
-    def parser(self):
+    def parse_weather_data(self):
         list_of_data = []
         with open(self.file_to_read, 'r') as file_name:
             files_dictionary = csv.DictReader(file_name)

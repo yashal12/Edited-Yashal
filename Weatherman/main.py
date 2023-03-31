@@ -2,83 +2,88 @@ import argparse
 import calendar
 import glob
 
-from barcharts import Charts
-from calculations import Statistics
-from parser import Parser
-from report import Report
+from barcharts import WeatherCharts
+from calculations import WeatherStatistics
+from parser import WeatherDataParser
+from report import WeatherReportGenerator
 
 
-class Main:
+class WeatherDataAnalyzer:
 
-    def month_year_from_arguments(self, given_month):
-        month_abbreviations = calendar.month_abbr
+    def get_month_abbreviation(self, month_number):
+        if month_number < 1 or month_number > 12:
+            raise ValueError("Invalid month number")
 
-        for index, month_name in enumerate(month_abbreviations):
-            if index == given_month:
-                return month_name
+        return calendar.month_abbr[month_number]
 
-    def files_list(self, year, folder_path):
-        file_path = 'Murree_weather_' + str(year) + '_*txt'  # search for files in directory
-        files = glob.glob(f"{folder_path}/{file_path}")
+    def get_files_by_year(self, year, folder_path):
+        file_pattern = f"Murree_weather_{year}_*.txt"
+        file_paths = glob.glob(f"{folder_path}/{file_pattern}")
 
-        return files
+        return file_paths
 
-    def command_line_arguments(self):
-        if __name__ == '__main__':
-            parser = argparse.ArgumentParser()
-            parser.add_argument('file')
-            parser.add_argument('-a')
-            parser.add_argument('-e')
-            parser.add_argument('-c')
-            args = parser.parse_args()
+    def process_command_line_arguments(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('file')
+        parser.add_argument('-a')
+        parser.add_argument('-e')
+        parser.add_argument('-c')
+        args = parser.parse_args()
 
-            if args.a:
-                year, month = args.a.split('/')
-                month = self.month_year_from_arguments(int(month))
-                folder_path = args.file
-                file_path = 'Murree_weather_' + str(year) + '_' + str(month) + '.txt'
-                file_list = glob.glob(f"{folder_path}/{file_path}")
-                report = Report()
+        if args.a:
+            year, month = args.a.split('/')
+            month = self.get_month_abbreviation(int(month))
+            folder_path = args.file
+            file_pattern = f"Murree_weather_{year}_{month}.txt"
+            file_list = glob.glob(f"{folder_path}/{file_pattern}")
+            weather_report = WeatherReportGenerator()
 
-                for file_data in file_list:
-                    parse = Parser(file_data)
-                    parsed_file = parse.parser()
-                    month = Statistics(parsed_file)
+            for file_data in file_list:
+                parse = WeatherDataParser(file_data)
+                parsed_file = parse.parse_weather_data()
+                month = WeatherStatistics(parsed_file)
 
-                    max_temperature, min_temperature, humidity, length_of_file = month.sum_call()
-                    average_highest = month.highest_average(max_temperature, length_of_file)
-                    average_lowest = month.lowest_average(min_temperature, length_of_file)
-                    average_humidity = month.average_humidity(humidity, length_of_file)
-                    month.print(average_highest, average_lowest, average_humidity)
+                max_temperature = month.compute_sum('Max TemperatureC')
+                min_temperature = month.compute_sum('Min TemperatureC')
+                humidity = month.compute_sum('Max Humidity')
+                average_highest = month.compute_average(max_temperature)
+                average_lowest = month.compute_average(min_temperature)
+                average_humidity = month.compute_average(humidity)
 
-                    report.report(average_highest, average_lowest, average_humidity)
+                weather_report.print_monthly_report(average_highest, average_lowest, average_humidity)
+                weather_report.generate_report(average_highest, average_lowest, average_humidity)
 
-            if args.e:
-                year = args.e
-                folder_path = args.file
-                file = self.files_list(year, folder_path)
-                year = Statistics(file)
-                report = Report()
-                max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature, date_humidity = year.annual_operations()
-                year.print_annual(max_temperature, min_temperature, humidity, date_max_temperature,
-                                  date_min_temperature, date_humidity)
-                report.report(max_temperature, min_temperature, humidity)
+        if args.e:
+            year = args.e
+            folder_path = args.file
+            file = self.get_files_by_year(year, folder_path)
+            year = WeatherStatistics(file)
+            weather_report = WeatherReportGenerator()
+            max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature, date_humidity = year.annual_statistics()
 
-            if args.c:
-                year, month = args.c.split('/')
-                month = self.month_year_from_arguments(int(month))
-                folder_path = args.file
-                file_path = 'Murree_weather_' + str(year) + '_' + str(month) + '.txt'
-                file_list = glob.glob(f"{folder_path}/{file_path}")
+            weather_report.print_annual_report(max_temperature, min_temperature, humidity, date_max_temperature,
+                                               date_min_temperature,
+                                               date_humidity)
+            weather_report.generate_report(max_temperature, min_temperature, humidity)
 
-                for file_data in file_list:
-                    parse = Parser(file_data)
-                    parsed_file = parse.parser()
-                    chart = Charts(parsed_file)
-                    chart.max_temperature_chart()
-                    chart.min_temperature_chart()
-                    chart.combine_chart()
+        if args.c:
+            year, month = args.c.split('/')
+            month = self.get_month_abbreviation(int(month))
+            folder_path = args.file
+            file_pattern = f"Murree_weather_{year}_{month}.txt"
+            file_list = glob.glob(f"{folder_path}/{file_pattern}")
+
+            for file_data in file_list:
+                parse = WeatherDataParser(file_data)
+                parsed_file = parse.parse_weather_data()
+                chart = WeatherCharts(parsed_file)
+                print("\n\t\t\t\t Highest Temperature")
+                chart.max_temperature_chart()
+                print("\n\t\t\t\t Lowest Temperature")
+                chart.min_temperature_chart()
+                print("\n\t\t\t\t Combine Chart")
+                chart.combine_chart()
 
 
-main_call = Main()
-main_call.command_line_arguments()
+weather_analyzer = WeatherDataAnalyzer()
+weather_analyzer.process_command_line_arguments()
