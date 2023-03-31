@@ -1,28 +1,35 @@
 class WeatherCharts:
 
-    def __init__(self, file_list):
-        self.file_list = file_list
+    def __init__(self, list_of_file):
+        self.list_of_file = list_of_file
 
     def max_temperature_chart(self):
-        for read_row in self.file_list:
+        print("\n\t\t\t\t Highest Temperature")
+
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
             print(f"\n{date_of_temperature}", end=' ')
             print('\033[31m' + int(read_row['Max TemperatureC']) * '+ ' + '\033[0m', end=' ')
-            print(f"{read_row['Max TemperatureC']}")
+            print(f"{read_row['Max TemperatureC']}C")
 
     def min_temperature_chart(self):
-        for read_row in self.file_list:
+        print("\n\t\t\t\t Lowest Temperature")
+
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
             print(f"\n{date_of_temperature}", end=' ')
             print('\033[34m' + int(read_row['Min TemperatureC']) * '+ ' + '\033[0m', end=' ')
-            print(f"{read_row['Min TemperatureC']}")
+            print(f"{read_row['Min TemperatureC']}C")
 
     def combine_chart(self):
-        for read_row in self.file_list:
+        print("\n\t\t\t\t Combine Chart")
+
+        for read_row in self.list_of_file:
             date_of_temperature = read_row['PKT']
 
-            print(f"\n{date_of_temperature}", end=' ')
-            print('\033[31m' + int(read_row['Max TemperatureC']) * '+ ' + '\033[0m', '\033[34m' + int(read_row['Min TemperatureC']) * '+ ' + '\033[0m', end='')
-            print(f"{read_row['Max TemperatureC']} {read_row['Min TemperatureC']}")
+            print(f"\n{date_of_temperature}", end='  ')
+            print('\033[31m' + int(read_row['Max TemperatureC']) * '+ ' + '\033[0m' '\033[34m' + int(
+                read_row['Min TemperatureC']) * '+ ' + '\033[0m', end=' ')
+            print(f"{read_row['Max TemperatureC']}C {read_row['Min TemperatureC']}C")

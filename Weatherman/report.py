@@ -2,11 +2,6 @@ from calculations import WeatherStatistics
 
 
 class WeatherReportGenerator:
-    def __init__(self):
-        self.result = None
-
-    def generate_report(self, max_temperature, min_temperature, humidity):
-        result = [max_temperature, min_temperature, humidity]
 
     def print_annual_report(self, max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature,
                      date_humidity):
@@ -16,4 +11,4 @@ class WeatherReportGenerator:
 
     def print_monthly_report(self, average_highest, average_lowest, average_humidity):
         print(
-            f"\nHighest Average: {average_highest}C \nLowest Average: {average_lowest}C \nLowest Average: {average_humidity}")
+            f"\nHighest Average: {average_highest}C \nLowest Average: {average_lowest}C \nHumidity Average: {average_humidity}%")

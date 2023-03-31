@@ -14,32 +14,28 @@ class WeatherStatistics:
         file_read = self.list_of_file
         file_count = len(file_read)
 
-        for file_num in range(file_count):
-            current_file = file_read[file_num]
-            file_data = WeatherDataParser(current_file).parse_weather_data()
+        max_temperature, date_max_temperature = max(
+            ((float(read_data['Max TemperatureC']), read_data['PKT']) for current_file in self.list_of_file
+             for read_data in WeatherDataParser(current_file).parse_weather_data()))
 
-            for read_data in file_data:
-                if float(read_data['Max TemperatureC']) > max_temperature:
-                    max_temperature = float(read_data['Max TemperatureC'])
-                    date_max_temperature = read_data['PKT']
+        min_temperature, date_min_temperature = min(
+            ((float(read_data['Min TemperatureC']), read_data['PKT']) for current_file in self.list_of_file
+             for read_data in WeatherDataParser(current_file).parse_weather_data()))
 
-                if float(read_data['Min TemperatureC']) < min_temperature:
-                    min_temperature = float(read_data['Min TemperatureC'])
-                    date_min_temperature = read_data['PKT']
+        humidity, date_humidity = max(
+            ((float(read_data['Max Humidity']), read_data['PKT']) for current_file in self.list_of_file
+             for read_data in WeatherDataParser(current_file).parse_weather_data()))
 
-                if float(read_data['Max Humidity']) > humidity:
-                    humidity = float(read_data['Max Humidity'])
-                    date_humidity = read_data['PKT']
-
-        return max_temperature, min_temperature, humidity, date_max_temperature, date_min_temperature, date_humidity
+        return round(max_temperature), round(min_temperature), round(humidity), date_max_temperature, date_min_temperature, date_humidity
 
     # Monthly Statistics
 
     def compute_sum(self, col):
-        temperature_sum = sum(float(read_data[col]) for read_data in self.list_of_file)
-        return temperature_sum
+        return sum(float(read_data[col]) for read_data in self.list_of_file)
 
-    def compute_average(self, temperature):
+    def compute_average(self, col):
         file_count = len(self.list_of_file)
+        temperature = self.compute_sum(col)
         average = temperature / file_count
+
         return round(average)
