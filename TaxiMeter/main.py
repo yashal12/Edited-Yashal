@@ -2,37 +2,56 @@ import keyboard
 
 from drivingState import TaxiStatus
 from endRide import EndRide
+from totalDistance import DistanceTracker
+from waitingTime import Wait
 
 
-class Input:
-    def __init__(self):
-        self.current_speed = 0
+def arrow_keys(self, event):
+    while True:
+        if event.name == 'up':
+            DistanceTracker().increase_speed()
+        elif event.name == 'down':
+            DistanceTracker().decrease_speed()
 
-    def arrow_keys(self, event):
+
+class Main:
+    def key_actions(self):
+        question = input("Start Ride? ")
+        if question == 'yes':
+            print("Trip started!")
+            TaxiStatus().start_ride()
+        if question == 'no':
+            print("No More Trips!")
+            return
+
+    def choices(self):
+        print("You can use UP Arrow to Increase Speed, Down Arrow to Decrease Speed, E / e to End Ride, P / p to "
+              "Pause Ride, R / r to Resume Ride")
+
         while True:
-            question = str(input("Start Ride?"))
-            if question == 'no':
-                break
-            elif question == 'yes':
-                print("Trip started!")
-                TaxiStatus().start_ride()
-
-            # global speed_calculator
-            if event.name == 'up':
-                self.current_speed += 1
-                print("Current speed:", self.current_speed, "m/s")
-            elif event.name == 'down':
-                self.current_speed = max(0, self.current_speed - 1)
-                print("Current speed:", self.current_speed, "m/s")
-            elif event.name in ('P', 'p'):
-                print("Trip paused!")
-                TaxiStatus().pause_ride()
-            elif event.name in ('R', 'r'):
-                print("Trip resumed!")
-                TaxiStatus().resume_ride()
-            elif event.name in ('E', 'e'):
+            TaxiStatus().start_ride()
+            choice = input("Enter Your choice: ")
+            if choice in ('E', 'e'):
                 print("Trip ended!")
                 EndRide().end_ride()
+                EndRide().taxi_meter()
+                EndRide().print()
+                break
+            elif choice in ('P', 'p'):
+                print("Trip paused!")
+                TaxiStatus().pause_ride()
+            elif choice in ('R', 'r'):
+                print("Trip resumed!")
+                TaxiStatus().resume_ride()
+                Wait().calculate_waiting_time()
+            elif choice not in ('E', 'e', 'P', 'p', 'R', 'r'):
+                print("Invalid input!")
+                return
 
-            else:
-                print("Invalid keyboard input!")
+            DistanceTracker().update_distance()
+
+
+Main().key_actions()
+Main().choices()
+keyboard.on_press(arrow_keys)
+keyboard.wait()

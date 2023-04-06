@@ -1,17 +1,16 @@
-import time
-
-from drivingState import TaxiStatus
+from totalDistance import DistanceTracker
 from waitingTime import Wait
+
+FARE_PER_KM = 3
 
 
 class RideFare:
-    def __init__(self, start_distance):
-        self.distance = start_distance
-        self.distance_rate = 3
-        self.start_time = TaxiStatus().start_ride()
 
     def calculate_ride_fare(self):
-        distance_charge = self.distance * self.distance_rate
-        fare = distance_charge + Wait().calculate_waiting_charge()
+        distance_km, distance_m = DistanceTracker().find_distance()
+        fare = distance_km * FARE_PER_KM + Wait().calculate_waiting_charge()
 
         return fare
+
+    def print_fare(self):
+        print(f"Fare: {self.calculate_ride_fare()} Rs")

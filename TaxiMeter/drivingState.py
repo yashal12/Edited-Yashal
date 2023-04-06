@@ -1,25 +1,27 @@
 import time
 
-distance = 100
+DISTANCE = 100
 
 
 class TaxiStatus:
     def __init__(self):
         self.start_time = None
-        self.distance = 0
+        self.wait_start_time = 0
+        self.status = "wait"
 
     def start_ride(self):
+        self.status = "driving"
         self.start_time = time.time()
-        return self.start_time
 
-    def start_distance(self):
-        self.distance = distance
-        return self.distance
+        return self.start_time
 
     def pause_ride(self):
-        return time.time()
+        if self.status == "driving":
+            self.status = "wait"
+            self.wait_start_time = time.time()
+
+        return self.wait_start_time
 
     def resume_ride(self):
-        self.start_time += time.time() - self.pause_ride()
-        return self.start_time
-
+        if self.status == "wait":
+            self.status = "driving"
