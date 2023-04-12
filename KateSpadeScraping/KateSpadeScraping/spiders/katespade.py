@@ -1,34 +1,65 @@
-import scrapy
+from scrapy import Request, Spider
 
 
-class KatespadeBotSpider(scrapy.Spider):
-    name = "katespade"
-    url = ["https://www.katespade.co.uk/en-gb/"]
+class KateSpadeSpider(Spider):
+    name = 'Katespade-bot'
+    start_urls = ['https://www.katespade.co.uk/en-gb/']
 
     def parse(self, response):
-        navbar = response.css('#navigation > ul').extract()
+        navbar_links = response.css('#navigation > ul > li > a::attr(href)').extract()
 
-        for link in navbar:
-            yield scrapy.Request(navbar, callback=self.parse_products)
+        for link in navbar_links:
+            yield Request(response.urljoin(link), callback=self.parse_category)
 
-    def parse_products(self, response):
-        names = self.parse_names(response)
-        prices = self.parse_prices(response)
-        images = self.parse_images(response)
-        color = self.parse_color(response)
-        description = self.parse_description(response)
+    def parse_category(self, response):
+        product_links = response.css('.product-tile a::attr(href)').getall()
 
-    def parse_names(self, response):
-        return response.css('.name-link::text').extract_first().strip()
+        for link in product_links:
+            yield Request(response.urljoin(link), callback=self.parse_product)
 
-    def parse_prices(self, response):
-        return response.css('.product-price::text').extract()[-1].strip()
+    def parse_product(self, response):
+        skus = []
+        product_name = response.css('.name-link::text').extract_first().strip()
+        product_url = response.url
+        brand_name = "Kate Spade"
+        description = [elem.strip() for elem in response.css('.description-details *::text').getall() if elem.strip()]
+        currency = "GBP"
+        category = response.css(".navigation-wrap a::text").get()
+        image_urls = response.css('img::attr(src)').get()
+        gender = "women"
+        market = "UK"
+        retailer = "katespade-uk"
+        retailer_sku = response.css(".product-number span::text").get()
 
-    def parse_images(self, response):
-        return response.css('img::attr(src)').getall()
+        for variant in response.css('.product-variations-select option'):
+            color = variant.css('.color::text').get()
+            size = variant.css('.size::text').get()
+            price = variant.css('.product-price::text').get()
+            if color and size:
+                sku = {
+                    "colour": color,
+                    "size": size,
+                    "currency": currency,
+                    "price": price,
+                    "sku": f"{color}-{size}"
+                }
+                skus.append(sku)
 
-    def parse_color(self, response):
-        return [c.split(': ')[1] for c in response.css('.swatchanchor::attr(title)').getall()]
-
-    def parse_description(self, response):
-        return [elem.strip() for elem in response.css('.description-details *::text').getall() if elem.strip()]
+        product = {
+            "product_name": product_name,
+            "product_url": product_url,
+            "brand_name": brand_name,
+            "description": "\n".join(description),
+            "currency": currency,
+            "category": category,
+            "image_urls": image_urls,
+            "gender": gender,
+            "market": market,
+            "retailer": retailer,
+            "retailer_sku": retailer_sku,
+            "skus": skus,
+        }
+        print("-------------------------------------PRODUCTS-----------------------------------------")
+        for i in product:
+            print(i, product[i])
+            yield product
