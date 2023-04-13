@@ -1,3 +1,5 @@
+import time
+
 from scrapy import Request, Spider
 
 
@@ -14,73 +16,66 @@ class KateSpadeSpider(Spider):
         yield from [Request(response.urljoin(link), callback=self.parse_product) for link in product_links]
 
     def parse_product(self, response):
-        product_name = self.get_product_name(response)
-        product_url = response.url
-        brand_name = "Kate Spade"
-        description = self.get_description(response)
-        currency = "GBP"
-        category = self.get_category(response)
-        image_urls = self.get_image_urls(response)
-        gender = "women"
-        market = "UK"
-        retailer = "katespade-uk"
-        retailer_sku = self.get_retailer_sku(response)
-        color = self.get_color(response)
-        sizes = self.get_sizes(response)
-        price = self.get_price(response)
-        skus = self.get_skus(color, sizes, currency, price)
-
         product = {
-            "product_name": product_name,
-            "product_url": product_url,
-            "brand_name": brand_name,
-            "description": description,
-            "currency": currency,
-            "category": category,
-            "image_urls": image_urls,
-            "gender": gender,
-            "market": market,
-            "retailer": retailer,
-            "retailer_sku": retailer_sku,
-            "skus": skus,
+            "brand": "Kate Spade",
+            "care": self.product_care(response),
+            "category": self.product_category(response),
+            "currency": "GBP",
+            "date": time.time(),
+            "description": self.product_description(response),
+            "gender": "women",
+            "image_urls": self.product_image_urls(response),
+            'industry': None,
+            "market": "UK",
+            "name": self.product_name(response),
+            "price": self.product_price(response),
+            "retailer": "katespade-uk",
+            "retailer_sku": self.product_retailer_sku(response),
+            "skus": self.get_skus(response),
+            'trail': [],
+            "url": response.url,
+            "url_original": self.start_urls,
+            "uuid": None
         }
 
-        for i in product:
-            print(i, product[i])
         yield product
 
-    def get_product_name(self, response):
+    def product_name(self, response):
         return response.css('.name-link::text').extract_first().strip()
 
-    def get_description(self, response):
+    def product_care(self, response):
+        care = response.css("#small-details p::text").extract()
+        material = response.css("ul~ ul li::text").extract()
+
+        return care, material
+
+    def product_description(self, response):
         return "\n".join(elem.strip() for elem in response.css('.description-details *::text').getall() if elem.strip())
 
-    def get_category(self, response):
-        return response.css(".navigation-wrap a::text").get()
+    def product_category(self, response):
+        return [response.css(".navigation-wrap a::text").get()]
 
-    def get_image_urls(self, response):
-        return response.css('img::attr(src)').get()
+    def product_image_urls(self, response):
+        return [response.css('img::attr(src)').get()]
 
-    def get_retailer_sku(self, response):
+    def product_retailer_sku(self, response):
         return response.css(".product-number span::text").get()
 
-    def get_color(self, response):
+    def product_color(self, response):
         return response.css(
             '#product-content > div.product-variations > div.attribute.color> h3 > span.attr-value::text').get()
 
-    def get_sizes(self, response):
+    def product_sizes(self, response):
         return [size.strip() for size in response.css('.attribute.size .value .swatchanchor::text').getall()]
 
-    def get_price(self, response):
+    def product_price(self, response):
         return [float(p.replace('£', '')) for p in response.css(".price-sales::text").extract() if p.strip()]
 
-    def get_skus(self, color, sizes, currency, price):
-        skus = []
-        skus.append({"colour": color, "size": sizes, "currency": currency, "price": price})
-        return skus
+    def get_skus(self, response):
+        skus = {}
+        colour = self.product_color(response)
+        price = self.product_price(response)
+        sizes = self.product_sizes(response) or ['One Size']
+        sku = {"colour": colour, "currency": "GBP", "price": price[0], "size": sizes}
 
-
-
-
-
-
+        return {f"{colour}_{sizes[0]}": sku}
