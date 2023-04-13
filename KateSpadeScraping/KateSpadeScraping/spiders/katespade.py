@@ -7,41 +7,34 @@ class KateSpadeSpider(Spider):
 
     def parse(self, response):
         navbar_links = response.css('#navigation > ul > li > a::attr(href)').extract()
-
-        for link in navbar_links:
-            yield Request(response.urljoin(link), callback=self.parse_category)
+        yield from [Request(response.urljoin(link), callback=self.parse_category) for link in navbar_links]
 
     def parse_category(self, response):
         product_links = response.css('.product-tile a::attr(href)').getall()
-
-        for link in product_links:
-            yield Request(response.urljoin(link), callback=self.parse_product)
+        yield from [Request(response.urljoin(link), callback=self.parse_product) for link in product_links]
 
     def parse_product(self, response):
-        skus = []
-        product_name = response.css('.name-link::text').extract_first().strip()
+        product_name = self.get_product_name(response)
         product_url = response.url
         brand_name = "Kate Spade"
-        description = [elem.strip() for elem in response.css('.description-details *::text').getall() if elem.strip()]
+        description = self.get_description(response)
         currency = "GBP"
-        category = response.css(".navigation-wrap a::text").get()
-        image_urls = response.css('img::attr(src)').get()
+        category = self.get_category(response)
+        image_urls = self.get_image_urls(response)
         gender = "women"
         market = "UK"
         retailer = "katespade-uk"
-        retailer_sku = response.css(".product-number span::text").get()
-        color = response.css('#product-content > div.product-variations > div.attribute.color> h3 > span.attr-value::text').get()
-        sizes = [size.strip() for size in response.css('.attribute.size .value .swatchanchor::text').getall()]
-        price = [float(p.replace('£', '')) for p in response.css(".price-sales::text").extract() if p.strip()]
-
-        skus.append({"colour": color, "size": sizes,
-                     "currency": currency, "price": price})
+        retailer_sku = self.get_retailer_sku(response)
+        color = self.get_color(response)
+        sizes = self.get_sizes(response)
+        price = self.get_price(response)
+        skus = self.get_skus(color, sizes, currency, price)
 
         product = {
             "product_name": product_name,
             "product_url": product_url,
             "brand_name": brand_name,
-            "description": "\n".join(description),
+            "description": description,
             "currency": currency,
             "category": category,
             "image_urls": image_urls,
@@ -55,3 +48,39 @@ class KateSpadeSpider(Spider):
         for i in product:
             print(i, product[i])
         yield product
+
+    def get_product_name(self, response):
+        return response.css('.name-link::text').extract_first().strip()
+
+    def get_description(self, response):
+        return "\n".join(elem.strip() for elem in response.css('.description-details *::text').getall() if elem.strip())
+
+    def get_category(self, response):
+        return response.css(".navigation-wrap a::text").get()
+
+    def get_image_urls(self, response):
+        return response.css('img::attr(src)').get()
+
+    def get_retailer_sku(self, response):
+        return response.css(".product-number span::text").get()
+
+    def get_color(self, response):
+        return response.css(
+            '#product-content > div.product-variations > div.attribute.color> h3 > span.attr-value::text').get()
+
+    def get_sizes(self, response):
+        return [size.strip() for size in response.css('.attribute.size .value .swatchanchor::text').getall()]
+
+    def get_price(self, response):
+        return [float(p.replace('£', '')) for p in response.css(".price-sales::text").extract() if p.strip()]
+
+    def get_skus(self, color, sizes, currency, price):
+        skus = []
+        skus.append({"colour": color, "size": sizes, "currency": currency, "price": price})
+        return skus
+
+
+
+
+
+
