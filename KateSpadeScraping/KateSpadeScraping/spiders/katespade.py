@@ -30,20 +30,12 @@ class KateSpadeSpider(Spider):
         market = "UK"
         retailer = "katespade-uk"
         retailer_sku = response.css(".product-number span::text").get()
+        color = response.css('#product-content > div.product-variations > div.attribute.color> h3 > span.attr-value::text').get()
+        sizes = [size.strip() for size in response.css('.attribute.size .value .swatchanchor::text').getall()]
+        price = [float(p.replace('£', '')) for p in response.css(".price-sales::text").extract() if p.strip()]
 
-        for variant in response.css('.product-variations-select option'):
-            color = variant.css('.color::text').get()
-            size = variant.css('.size::text').get()
-            price = variant.css('.product-price::text').get()
-            if color and size:
-                sku = {
-                    "colour": color,
-                    "size": size,
-                    "currency": currency,
-                    "price": price,
-                    "sku": f"{color}-{size}"
-                }
-                skus.append(sku)
+        skus.append({"colour": color, "size": sizes,
+                     "currency": currency, "price": price})
 
         product = {
             "product_name": product_name,
@@ -59,7 +51,7 @@ class KateSpadeSpider(Spider):
             "retailer_sku": retailer_sku,
             "skus": skus,
         }
-        print("-------------------------------------PRODUCTS-----------------------------------------")
+
         for i in product:
             print(i, product[i])
-            yield product
+        yield product
