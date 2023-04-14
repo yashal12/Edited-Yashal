@@ -72,10 +72,7 @@ class KateSpadeSpider(Spider):
         return [float(p.replace('£', '')) for p in response.css(".price-sales::text").extract() if p.strip()]
 
     def get_skus(self, response):
-        skus = {}
-        colour = self.product_color(response)
-        price = self.product_price(response)
+        common_sku = {'colour': self.product_color(response), 'price': self.product_price(response)}
         sizes = self.product_sizes(response) or ['One Size']
-        sku = {"colour": colour, "currency": "GBP", "price": price[0], "size": sizes}
 
-        return {f"{colour}_{sizes[0]}": sku}
+        return {f"{common_sku['colour']}_{size}": {**common_sku, 'size': size} for size in sizes}
